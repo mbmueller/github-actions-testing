@@ -31,12 +31,21 @@ jobs:
             ${{ github.event.pull_request.head.sha }}
           git push origin ${{ github.event.pull_request.head.ref }}
 
+      - name: Create Sync Branch
+        run: |
+          git fetch origin
+          # Temporären Branch von Dev aus erstellen
+          git checkout -b sync/hotfix-${{ github.event.pull_request.number }} origin/dev
+          # Nur den Squash-Commit von Main cherry-picken
+          git cherry-pick origin/main
+          git push origin sync/hotfix-${{ github.event.pull_request.number }}
+
       - name: Open PR to Dev
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh pr create \
             --base dev \
-            --head ${{ github.event.pull_request.head.ref }} \
+            --head sync/hotfix-${{ github.event.pull_request.number }} \
             --title "Hotfix Sync: ${{ github.event.pull_request.title }}" \
             --body "Auto-generated sync PR from Hotfix #${{ github.event.pull_request.number }}, triggered by @${{ github.actor }}"
