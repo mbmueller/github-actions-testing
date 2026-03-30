@@ -9,26 +9,6 @@ on:
       - closed
 
 jobs:
-  set-user:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate App Token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
-          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
-
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          fetch-depth: 0
-
-      - name: Set Git User
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
   sync-to-dev:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -47,12 +27,16 @@ jobs:
 
       - name: Restore Hotfix Branch if deleted
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b ${{ github.event.pull_request.head.ref }} \
             ${{ github.event.pull_request.head.sha }}
           git push origin ${{ github.event.pull_request.head.ref }}
 
       - name: Create Sync Branch
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin
           # Temporären Branch von Dev aus erstellen
           git checkout -b sync/hotfix-${{ github.event.pull_request.number }} origin/dev
